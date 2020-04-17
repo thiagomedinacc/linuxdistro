@@ -7,7 +7,7 @@ import os
 import cpustat
 
 
-HOST_NAME = '10.0.2.15' # !!!REMEMBER TO CHANGE THIS!!!
+HOST_NAME = '192.168.1.10' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 8000
 
 
@@ -31,26 +31,28 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 	uptimeSecs = os.popen('awk \'{print $1}\' /proc/uptime').read() + " segundos"
 	s.wfile.write("<body><p> Uptime em segundos: %s.</p>" % uptimeSecs)
 
-	# Modelo do processador e velocidade;
-	s.wfile.write("<body><p> Modelo do processador%s.</p>" % os.popen('cat -s /proc/cpuinfo | grep -m 1 "model name"').read().replace("model name", ""))
-	velocidade = os.popen('cat -s /proc/cpuinfo | grep -m 1 "cpu MHz"').read().replace("cpu MHz", "") + "MHz"
-	s.wfile.write("<body><p> Velocidade do processador %s.</p>" % velocidade )
+	# Modelo do processador e velocidade; MUDEEEEI
+	model = os.popen('cat /proc/cpuinfo | grep -m 1 "model name"').read().replace("model name", "")
+	s.wfile.write("<body><p> Modelo do processador%s.</p>" % model)
+	vel = os.popen('cat /proc/cpuinfo | grep -m 1 "cpu MHz"').read().replace("cpu MHz", "") + "MHz"
+	s.wfile.write("<body><p> Velocidade do processador %s.</p>" % vel )
 
 	# Capacidade ocupada do processador (%);
-	s.wfile.write("<p>Capacidade ocupada das cpus em percentual: %s</p>" % cpustat.GetCpuLoad().getcpuload())
+	s.wfile.write("<p>Capacidade ocupada das cpus em percent: %s</p>" % cpustat.GetCpuLoad().getcpuload())
 
-	# Quantidade de memória RAM total e usada (MB);
+	# Quantidade de memória RAM total e usada (MB); MUDEEEEI
 	ramTotal = os.popen('free -m | awk \'NR==2{print $2}\' ').read() + "MB"
 	s.wfile.write("<p>Quantidade de RAM total: %s</p>" % ramTotal)
-	ramUsada = os.popen('free -m | awk \'NR==3{print $2}\' ').read() + "MB" 
+	ramUsada = os.popen('free -m | awk \'NR==2{print $3}\' ').read() + "MB" 
 	s.wfile.write("<p>Quantidade da RAM usada: %s</p>" % ramUsada)
 
 	# Versão do sistema;
 	sistema = os.popen('cat /etc/os-release |grep "VERSION" | awk \'NR==1{print $0}\'').read().replace("VERSION=","")
 	s.wfile.write("<p>Versao do sistema:: %s</p>" % sistema)
 	
-	# Lista de processos em execução (pid e nome).
-	s.wfile.write("<p>Versao do sistema: %s</p>" % os.popen('ps -r |awk  \'BEGIN {i=1;}  {print $i;} { print $5}\'').read())
+	# Lista de processos em execução (pid e nome). MUDEEEEEI
+	procs = os.popen('ps -o pid -o comm').read()
+	s.wfile.write("<p>Processos em execucao %s</p>" % procs)
 
         s.wfile.write("</body></html>")
 
@@ -64,6 +66,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     httpd.server_close()
-    print ("Servidor fechado")
+    print (" Servidor fechado")
     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
